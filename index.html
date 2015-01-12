@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <title>Tetris</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui">
+    <script src="js/jquery-2.1.0.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/kinetic-v5.1.0.min.js"></script>
+    <script src="js/requestAnimationFramePolyfill.js"></script>
+    <script src="js/main.js" defer></script>
+    <link rel="stylesheet" href="css/main.css">
+
+    <!--
+
+      Credits...
+      
+      Inspiration: Tetris テトリス Tetorisu for Game Boy - Bullet-Proof Software / Nintendo / Alexey Pajitnov - 1989
+      Background: http://subtlepatterns.com/3px-tile/
+      Audio: http://www.youtube.com/watch?v=4zTFyPXGmjc
+      Colors: http://codepen.io/chrisnager/pen/qjbdt
+
+    -->
+
+  </head>
+
+  <body>
+    <div id="settings">
+      <div class="row header">
+        <a class="btn large" id="start-game">PLAY &#10151;</a>
+      </div>
+      <div class="row header">Settings</div>
+      <div class="row">
+        <span>
+          <label for="level-input">Level</label>
+          <input class="integer single" type="text" id="level-input" value="0" data-max="9"/>
+        </span>
+        <span>
+          <label for="high-input">High</label>
+          <input class="integer single" type="text" id="high-input" value="0" data-max="5" />
+        </span>
+      </div>
+      <div class="row header">Music</div>
+      <div class="row">
+        <a class="btn music active" data-type="a">A Type</a>
+        <a class="btn music" data-type="b">B Type</a>
+        <a class="btn music" data-type="c">C Type</a>
+        <a class="btn music" data-type="awesome">Awesome Type</a>
+        <a class="btn music" data-type="off">Off</a>
+      </div>
+
+      <div class="row header">Controls <a id="controls-toggle" class="toggle">&#9998;</a></div>
+      <div id="controls-wrap" class="row grid">
+        <span>
+          <label for="move-left-input">Move Left</label>
+          <input class="keyboard" type="text" id="move-left-input" value="a" data-charcode="65" />
+        </span>
+        <span>
+          <label for="move-right-input">Move Right</label>
+          <input class="keyboard" type="text" id="move-right-input" value="d" data-charcode="68" />
+        </span>
+        <span>
+          <label for="soft-drop-input">Soft Drop</label>
+          <input class="keyboard" type="text" id="soft-drop-input" value="s" data-charcode="83" />
+        </span>
+        <span>
+          <label for="rotate-left-input">Rotate Left</label>
+          <input class="keyboard" type="text" id="rotate-left-input" value="&#8592;" data-charcode="37" />
+        </span>
+        <span>
+          <label for="rotate-right-input">Rotate Right</label>
+          <input class="keyboard" type="text" id="rotate-right-input" value="&#8594;" data-charcode="39" />
+        </span>
+        <span>
+          <label for="hard-drop-input">Hard Drop</label>
+          <input class="keyboard" type="text" id="hard-drop-input" value="&#8595;" data-charcode="40" />
+        </span>
+        <span>
+          <label for="pause-input">Pause</label>
+          <input class="keyboard" type="text" id="pause-input" value="esc" data-charcode="27" />
+        </span>
+        
+        <div class="row">&nbsp;</div>
+
+        <a class="btn control-type active" data-type="pc">PC Style</a>
+        <a class="btn control-type" data-type="console">Console Style</a>
+        <a class="btn control-type" data-type="special">Super Special</a>
+        <a class="btn control-type" data-type="custom">Custom Style</a>
+      </div>
+      
+      <div class="row header">Debug <a id="debug-toggle" class="toggle">&#9998;</a></div>
+      <div id="debug-wrap" class="row grid">
+        <span>
+          <label for="grid-width-input">Grid Width</label>
+          <input class="integer" type="text" id="grid-width-input" value="10" />
+        </span>
+        <span>
+          <label for="grid-height-input">Grid Height</label>
+          <input class="integer" type="text" id="grid-height-input" value="18" />
+        </span>
+        <span>
+          <label for="base-speed-input">Base Speed</label>
+          <input class="integer" type="text" id="base-speed-input" value="10" />
+        </span>
+        <span>
+          <label for="level-modifier-input">Level Modifier</label>
+          <input class="integer" type="text" id="level-modifier-input" value="12" />
+        </span>
+        <span>
+          <label for="fancy-graphics-input">Fancy Graphics?</label>
+          <input class="checkbox" type="text" id="fancy-graphics-input" value="&#10004;" />
+        </span>
+      </div>
+    </div>
+
+    <div id="preload">
+      <div class="audio">
+        <audio data-name="typea" src="sfx/typea.mp3" loop></audio>
+        <audio data-name="typeb" src="sfx/typeb.mp3" loop></audio>
+        <audio data-name="typec" src="sfx/typec.mp3" loop></audio>
+        <audio data-name="typeawesome" src="sfx/typeawesome.mp3" loop></audio>
+        
+        <audio data-name="line" src="sfx/line.mp3"></audio>
+        <audio data-name="tetris" src="sfx/tetris.mp3"></audio>
+        <audio data-name="gameover" src="sfx/gameover.mp3"></audio>
+
+        <audio data-name="drop" src="sfx/drop.mp3"></audio>
+        <audio data-name="drop" src="sfx/drop.mp3"></audio>
+        <audio data-name="drop" src="sfx/drop.mp3"></audio>
+        
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+        <audio data-name="move" src="sfx/move.mp3"></audio>
+
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+        <audio data-name="rotate" src="sfx/rotate.mp3"></audio>
+      </div>
+    </div>
+    
+    <div id="debug"></div>
+    
+    <div id="stage"></div>
+
+    <div id="hud">
+      <div id="next">
+        <!--<div class="hud-title">Next</div>-->
+        <div class="hud-value"></div>
+      </div>
+      <div id="score">
+        <div class="hud-title">Score</div>
+        <div class="hud-value">0</div>
+      </div>
+      <div id="level">
+        <div class="hud-title">Level</div>
+        <div class="hud-value">0</div>
+      </div>
+      <div id="lines">
+        <div class="hud-title">Lines</div>
+        <div class="hud-value">0</div>
+      </div>
+    </div>
+
+    <div id="shade"></div>
+    <div id="shade-message"></div>
+  </body>
+
+</html>
